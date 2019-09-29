@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Room Reservation</string>
+    <string name="title_activity_specific_room">Specific Room Activity</string>
+</resources>
