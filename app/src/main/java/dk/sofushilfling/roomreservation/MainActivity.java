@@ -60,7 +60,7 @@ public class MainActivity extends Activity
 
     }
 
-    private  void getRooms(){
+    private void getRooms(){
         OkHttpClient client = new OkHttpClient();
 
         final Request request = new Request.Builder().url("http://anbo-roomreservationv3.azurewebsites.net/api/Rooms").build();
