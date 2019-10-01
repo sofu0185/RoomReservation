@@ -45,6 +45,7 @@ public class MainActivity extends Activity
 
         Toolbar toolBar = findViewById(R.id.toolbar);
         setActionBar(toolBar);
+        getActionBar().setDisplayHomeAsUpEnabled(false);
 
         roomArrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, rooms);
         AdapterView.OnItemClickListener itemClickListener = new AdapterView.OnItemClickListener() {

@@ -14,5 +14,7 @@
     <string name="invalid_password">Password must be >5 characters</string>
     <string name="login_failed">"Login failed"</string>
     <string name="action_sign_out">Sign out</string>
-    <string name="title_activity_main2">Main2Activity</string>
+    <string name="title_activity_user">User information</string>
+    <string name="create_reservation_purpose">Purpose</string>
+    <string name="create_reservation_button">Create</string>
 </resources>

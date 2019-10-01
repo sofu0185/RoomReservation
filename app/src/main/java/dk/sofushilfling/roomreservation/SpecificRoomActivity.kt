@@ -5,12 +5,16 @@ import android.content.Intent
 import android.os.Bundle
 import android.provider.CalendarContract
 import android.util.Log
+import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.CalendarView
 import android.widget.ListView
 import android.widget.Toolbar
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
+import kotlinx.android.synthetic.*
 
 import kotlinx.android.synthetic.main.activity_specific_room.*
 import okhttp3.*
@@ -36,10 +40,22 @@ class SpecificRoomActivity : Activity() {
         val listView = listViewReservations as ListView
         listView.adapter = reservationsAdapter
 
-        // Log.d("TAG", "$year/$month/$dayOfMonth")
+        if(FirebaseAuth.getInstance().currentUser != null){
+            fab.show()
+            fab.setOnClickListener { view -> addNewReservation(view) }
+        }
+        else
+            fab.hide()
+
+
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth -> dateChanged(year, month, dayOfMonth) }
         val dateTime = java.time.LocalDate.now()
         dateChanged(dateTime.year, dateTime.monthValue - 1, dateTime.dayOfMonth)
+    }
+
+    private fun addNewReservation(view: View){
+        val intent = Intent(this, CreateReservationActivity::class.java)
+        startActivity(intent)
     }
 
     private fun dateChanged(year: Int, month: Int, dayOfMonth: Int){
