@@ -1,15 +1,19 @@
 package dk.sofushilfling.roomreservation;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.Activity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toolbar;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-public class UserActivity extends AppCompatActivity
+public class UserActivity extends Activity
 {
 
     @Override
@@ -17,6 +21,8 @@ public class UserActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
+        Toolbar toolbar = findViewById(R.id.toolbar_user);
+        setActionBar(toolbar);
 
         final TextView userEmailTextView = findViewById(R.id.user_email);
         final Button signoutButton = findViewById(R.id.sign_out_button);
@@ -30,5 +36,15 @@ public class UserActivity extends AppCompatActivity
                 finish();
             }
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item)
+    {
+        if(item.getItemId() == android.R.id.home){
+            onBackPressed();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 }

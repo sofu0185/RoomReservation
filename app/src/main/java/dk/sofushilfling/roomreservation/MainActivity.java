@@ -95,12 +95,11 @@ public class MainActivity extends Activity
                 startActivityForResult(intent, 0);
             }
             else{
-                intent = new Intent(this, UserActivity.class);
+                intent = new Intent(getBaseContext(), UserActivity.class);
                 startActivity(intent);
             }
 
         }
-
         return super.onOptionsItemSelected(item);
     }
 

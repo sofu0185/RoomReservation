@@ -31,7 +31,7 @@ class SpecificRoomActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_specific_room)
-        setActionBar(toolbar as Toolbar)
+        setActionBar(toolbar_specific_room as Toolbar)
 
         room = intent.getSerializableExtra("ROOM") as Room
         title = room.name
@@ -40,12 +40,14 @@ class SpecificRoomActivity : Activity() {
         val listView = listViewReservations as ListView
         listView.adapter = reservationsAdapter
 
-        if(FirebaseAuth.getInstance().currentUser != null){
-            fab.show()
-            fab.setOnClickListener { view -> addNewReservation(view) }
-        }
-        else
+        if(FirebaseAuth.getInstance().currentUser == null){
             fab.hide()
+        }
+        else{
+            fab.show()
+            fab.setOnClickListener { view ->  addNewReservation(view) }
+        }
+
 
 
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth -> dateChanged(year, month, dayOfMonth) }
@@ -55,6 +57,7 @@ class SpecificRoomActivity : Activity() {
 
     private fun addNewReservation(view: View){
         val intent = Intent(this, CreateReservationActivity::class.java)
+        intent.putParcelableArrayListExtra("reservations_today", reservations);
         startActivity(intent)
     }
 

@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+import android.widget.Toolbar;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -27,7 +28,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
 import com.google.firebase.auth.FirebaseAuthInvalidUserException;
 import com.google.firebase.auth.FirebaseUser;
 
-public class LoginActivity extends AppCompatActivity
+public class LoginActivity extends Activity
 {
     private FirebaseAuth mAuth;
     private EditText emailEditText;
@@ -41,6 +42,10 @@ public class LoginActivity extends AppCompatActivity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        Toolbar toolbar = findViewById(R.id.toolbar_login);
+        setActionBar(toolbar);
+        getActionBar().setDisplayHomeAsUpEnabled(true);
+
 
         emailEditText = findViewById(R.id.email);
         passwordEditText = findViewById(R.id.password);
@@ -151,6 +156,7 @@ public class LoginActivity extends AppCompatActivity
 
     public void loginDataChanged(String username, String password) {
         loginButton.setEnabled(false);
+        registerButton.setEnabled(false);
         if (!isUserNameValid(username)) {
             emailEditText.setError(getResources().getString(R.string.invalid_username));
         }
@@ -159,6 +165,7 @@ public class LoginActivity extends AppCompatActivity
         }
         if(isUserNameValid(username) && isPasswordValid(password)) {
             loginButton.setEnabled(true);
+            registerButton.setEnabled(true);
         }
     }
 
