@@ -23,6 +23,16 @@ public class Reservation implements Parcelable
     private String purpose;
     private int roomId;
 
+    public Reservation(){}
+
+    public Reservation(long fromTime, long toTime, String userId, String purpose, int roomId) {
+        this.fromTime = fromTime;
+        this.toTime = toTime;
+        this.userId = userId;
+        this.purpose = purpose;
+        this.roomId = roomId;
+    }
+
     protected Reservation(Parcel in)
     {
         id = in.readInt();

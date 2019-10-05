@@ -72,7 +72,7 @@ public class MainActivity extends Activity
         super.onActivityResult(requestCode, resultCode, data);
         if(requestCode == 0){
             user = FirebaseAuth.getInstance().getCurrentUser();
-            Log.d("TAG", "Is user logged in? " + Boolean.toString(user != null));
+            Log.d("TAG", "Is user logged in? " + (user != null));
             if(user != null){
                 Log.d("TAG", user.getEmail());
             }

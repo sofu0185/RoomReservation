@@ -58,6 +58,7 @@ class SpecificRoomActivity : Activity() {
     private fun addNewReservation(view: View){
         val intent = Intent(this, CreateReservationActivity::class.java)
         intent.putParcelableArrayListExtra("reservations_today", reservations);
+        intent.putExtra("roomId", room.id)
         startActivity(intent)
     }
 
