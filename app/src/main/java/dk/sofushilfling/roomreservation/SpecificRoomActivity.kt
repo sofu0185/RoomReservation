@@ -19,6 +19,8 @@ import kotlinx.android.synthetic.*
 import kotlinx.android.synthetic.main.activity_specific_room.*
 import okhttp3.*
 import java.io.IOException
+import java.time.LocalDate
+import java.time.LocalTime
 import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.reflect.typeOf
@@ -27,6 +29,7 @@ class SpecificRoomActivity : Activity() {
     private var reservations = ArrayList<Reservation>()
     private lateinit var reservationsAdapter: ArrayAdapter<Reservation>
     private lateinit var room: Room
+    private  lateinit var selectedDate: LocalDate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -50,15 +53,19 @@ class SpecificRoomActivity : Activity() {
 
 
 
-        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth -> dateChanged(year, month, dayOfMonth) }
-        val dateTime = java.time.LocalDate.now()
-        dateChanged(dateTime.year, dateTime.monthValue - 1, dateTime.dayOfMonth)
+        calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            selectedDate = LocalDate.of(year, month, dayOfMonth)
+            dateChanged(year, month, dayOfMonth)
+        }
+        selectedDate = java.time.LocalDate.now()
+        dateChanged(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
     }
 
     private fun addNewReservation(view: View){
         val intent = Intent(this, CreateReservationActivity::class.java)
         intent.putParcelableArrayListExtra("reservations_today", reservations);
         intent.putExtra("roomId", room.id)
+        intent.putExtra("selectedDate", selectedDate)
         startActivity(intent)
     }
 

@@ -1,15 +1,10 @@
 package dk.sofushilfling.roomreservation
 
 import android.app.Activity
-import android.content.Context
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.text.BoringLayout
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
-import android.view.View
-import android.view.inputmethod.InputMethodManager
 import android.widget.TimePicker
 import android.widget.Toast
 import android.widget.Toolbar
@@ -19,11 +14,14 @@ import kotlinx.android.synthetic.main.activity_create_reservation.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.IOException
+import java.time.LocalDate
+import java.util.*
+import kotlin.collections.ArrayList
 
 class CreateReservationActivity : Activity() {
 
     private lateinit var todaysReservations: ArrayList<Reservation>
+    private lateinit var selectedDate: LocalDate
     private var roomId: Int = 0;
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,6 +30,9 @@ class CreateReservationActivity : Activity() {
         setActionBar(toolbar_create_reservation as Toolbar)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
+
+        todaysReservations = intent.getParcelableArrayListExtra<Reservation>("reservations_today")
+        selectedDate = intent.getSerializableExtra("selectedDate") as LocalDate
         roomId = intent.getIntExtra("roomId", -1)
         if(roomId == -1)
             Log.e("TAG", "Error!!! no roomId was sent to CreateReservationActivity from SpecificRoomActivity")
@@ -54,10 +55,10 @@ class CreateReservationActivity : Activity() {
 
         })
 
-        todaysReservations = intent.getParcelableArrayListExtra<Reservation>("reservations_today")
+
 
         create_button.setOnClickListener {
-            if(isRoomAvalibleAtSpecifiedTime())
+            if(isRoomAvailableAtSpecifiedTime())
                 postReservation()
             else
                 Toast.makeText(this, "Room is already reserved at given time!", Toast.LENGTH_SHORT).show()
@@ -83,20 +84,23 @@ class CreateReservationActivity : Activity() {
 
     private fun postReservation(){
 
-        val url = "";
-        val fromTimeSec: Long = ((time_picker_from.hour * 60 + time_picker_from.minute) * 60).toLong()
-        val toTimeSec: Long = ((time_picker_to.hour * 60 + time_picker_to.minute) * 60).toLong()
+        val url = "http://anbo-roomreservationv3.azurewebsites.net/api/Reservations"
+
+        val fromTime = getTimeInSeconds(time_picker_from.hour, time_picker_from.minute)
+        val toTime = getTimeInSeconds(time_picker_to.hour, time_picker_to.minute)
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val purpose = reservation_purpose.text.toString()
-        val newRes: Reservation = Reservation(fromTimeSec, toTimeSec, userId, purpose, roomId)
+        val newRes = Reservation(fromTime, toTime, userId, purpose, roomId)
         val jsonReservation: String = Gson().toJson(newRes)
+
+        Log.d("TAG", jsonReservation)
 
         val JSON = "application/json; charset=utf-8".toMediaType()
         val client = OkHttpClient()
 
         val requestBody = jsonReservation.toRequestBody(JSON)
         val request = Request.Builder().url(url).post(requestBody).build()
-
+/*
         client.newCall(request).enqueue(object:Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
@@ -108,19 +112,33 @@ class CreateReservationActivity : Activity() {
                 }
             }
         })
-
+ */
+        finish()
     }
 
-    private fun isRoomAvalibleAtSpecifiedTime(): Boolean{
-        val fromTimeSec: Long = ((time_picker_from.hour * 60 + time_picker_from.minute) * 60).toLong()
-        val toTimeSec: Long = ((time_picker_to.hour * 60 + time_picker_to.minute) * 60).toLong()
+    private fun getTimeInSeconds(hour: Int, minute: Int): Long{
+        val calendar = GregorianCalendar()
+        calendar.set(Calendar.YEAR, selectedDate.year)
+        calendar.set(Calendar.MONTH, selectedDate.monthValue)
+        calendar.set(Calendar.DAY_OF_MONTH, selectedDate.dayOfMonth)
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour)
+        calendar.set(Calendar.MINUTE, minute)
+        return calendar.timeInMillis / 1000
+    }
+
+
+    private fun isRoomAvailableAtSpecifiedTime(): Boolean{
+        val fromTimeSec = getTimeInSeconds(time_picker_from.hour, time_picker_from.minute)
+        val toTimeSec = getTimeInSeconds(time_picker_to.hour, time_picker_to.minute)
         for (reservation in todaysReservations){
-            if(fromTimeSec < reservation.fromTime && toTimeSec < reservation.toTime ||
-               reservation.toTime < fromTimeSec && reservation.toTime < toTimeSec)
+            if(fromTimeSec > reservation.fromTime && fromTimeSec < reservation.toTime ||
+               toTimeSec > reservation.fromTime && toTimeSec < reservation.toTime ||
+               fromTimeSec < reservation.fromTime && toTimeSec > reservation.toTime)
             {
-                return true
+                return false
             }
         }
-        return false
+        return true
     }
 }
