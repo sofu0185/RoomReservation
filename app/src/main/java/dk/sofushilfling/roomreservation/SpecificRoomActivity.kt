@@ -2,34 +2,37 @@ package dk.sofushilfling.roomreservation
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.Drawable
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
-import android.provider.CalendarContract
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.ArrayAdapter
-import android.widget.CalendarView
-import android.widget.ListView
-import android.widget.Toolbar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
+import android.view.ViewGroup
+import android.widget.*
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
-import kotlinx.android.synthetic.*
 
 import kotlinx.android.synthetic.main.activity_specific_room.*
 import okhttp3.*
 import java.io.IOException
 import java.time.LocalDate
-import java.time.LocalTime
 import java.util.*
 import kotlin.collections.ArrayList
-import kotlin.reflect.typeOf
 
 class SpecificRoomActivity : Activity() {
+    private val CREATE_NEW_RESERVATION = 4001
+
     private var reservations = ArrayList<Reservation>()
-    private lateinit var reservationsAdapter: ArrayAdapter<Reservation>
+    private lateinit var reservationsAdapter: ReservationAdapter
     private lateinit var room: Room
-    private  lateinit var selectedDate: LocalDate
+    private lateinit var selectedDate: LocalDate
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,9 +42,33 @@ class SpecificRoomActivity : Activity() {
         room = intent.getSerializableExtra("ROOM") as Room
         title = room.name
 
-        reservationsAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, reservations)
-        val listView = listViewReservations as ListView
-        listView.adapter = reservationsAdapter
+        reservationsAdapter = ReservationAdapter(reservations)
+        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewReservations).apply {
+            setHasFixedSize(true)
+            adapter = reservationsAdapter
+        }
+        recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val itemTouchHelper = ItemTouchHelper(object: ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
+            private val icon: Drawable? = ContextCompat.getDrawable(baseContext, R.drawable.ic_delete_sweep_black_24dp)
+            private val background: ColorDrawable = ColorDrawable(ContextCompat.getColor(baseContext, android.R.color.holo_red_light))
+
+            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, target: RecyclerView.ViewHolder): Boolean = false
+
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                deleteItem(viewHolder.adapterPosition)
+            }
+
+            override fun getMovementFlags(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder): Int {
+                val swipeFlags: Int
+                if(reservations[viewHolder.adapterPosition].userId == FirebaseAuth.getInstance().currentUser?.uid)
+                    swipeFlags = ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT
+                else
+                    swipeFlags = 0
+                return ItemTouchHelper.Callback.makeMovementFlags(0, swipeFlags)
+            }
+        })
+        itemTouchHelper.attachToRecyclerView(recyclerView)
 
         if(FirebaseAuth.getInstance().currentUser == null){
             fab.hide()
@@ -51,8 +78,6 @@ class SpecificRoomActivity : Activity() {
             fab.setOnClickListener { view ->  addNewReservation(view) }
         }
 
-
-
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
             selectedDate = LocalDate.of(year, month, dayOfMonth)
             dateChanged(year, month, dayOfMonth)
@@ -61,12 +86,19 @@ class SpecificRoomActivity : Activity() {
         dateChanged(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
     }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == CREATE_NEW_RESERVATION){
+            dateChanged(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
+        }
+    }
+
     private fun addNewReservation(view: View){
         val intent = Intent(this, CreateReservationActivity::class.java)
         intent.putParcelableArrayListExtra("reservations_today", reservations);
         intent.putExtra("roomId", room.id)
         intent.putExtra("selectedDate", selectedDate)
-        startActivity(intent)
+        startActivityForResult(intent, CREATE_NEW_RESERVATION)
     }
 
     private fun dateChanged(year: Int, month: Int, dayOfMonth: Int){
@@ -85,9 +117,27 @@ class SpecificRoomActivity : Activity() {
         getReservationsFromDate(room.id, fromTime.time / 1000, toTime.time / 1000)
     }
 
+    private fun deleteItem(position: Int) {
+        val deletedReservation = reservations[position]
+        reservations.removeAt(position)
+        reservationsAdapter.notifyItemRemoved(position)
+
+        val url = "http://anbo-roomreservationv3.azurewebsites.net/api/Reservations/" + deletedReservation.id
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).delete().build()
+
+        client.newCall(request).enqueue(object:Callback {
+            override fun onFailure(call: Call, e: IOException) { e.printStackTrace() }
+
+            override fun onResponse(call: Call, response: Response) {
+
+            }
+        })
+    }
+
     private fun getReservationsFromDate(roomId: Int, fromTime: Long, toTime: Long) {
         val url = "http://anbo-roomreservationv3.azurewebsites.net/api/Reservations/room/$roomId/$fromTime/$toTime"
-        Log.d("TAG", url)
+        Log.d("TAG", "getting room $roomId reservations between $fromTime - $toTime")
         val client = OkHttpClient()
         val request = Request.Builder().url(url).build()
 
@@ -102,12 +152,11 @@ class SpecificRoomActivity : Activity() {
                     val res = gson.fromJson(response.body?.string(), Array<Reservation>::class.java)
                     reservations.clear()
                     reservations.addAll(res)
+                    reservations.sortBy { x -> x.fromTime }
 
                     runOnUiThread { reservationsAdapter.notifyDataSetChanged()}
                 }
             }
         })
-
     }
-
 }

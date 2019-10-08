@@ -21,10 +21,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
 
+        <!--
         <ListView
             android:id="@+id/listViewReservations"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
+            -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerViewReservations"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical"/>
     </LinearLayout>
 
 

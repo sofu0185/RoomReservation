@@ -4,6 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import java.util.Date;
+import java.util.Locale;
 
 public class Reservation implements Parcelable
 {
@@ -64,9 +65,9 @@ public class Reservation implements Parcelable
     @Override
     public String toString()
     {
-        return "From: " + new Date(getFromTime() * 1000) +
-                ", To: " + new Date(getToTime() * 1000) +
-                ", Purpose: '" + purpose + "'";
+        return "Purpose: " + purpose +
+                String.format(Locale.getDefault(), "\nFrom: %tT", new Date(getFromTime() * 1000)) +
+                String.format(Locale.getDefault(), "\nTo: %tT", new Date(getToTime() * 1000));
     }
 
     @Override

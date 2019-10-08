@@ -14,6 +14,9 @@ import kotlinx.android.synthetic.main.activity_create_reservation.*
 import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.IOException
+import java.math.BigInteger
+import java.security.MessageDigest
 import java.time.LocalDate
 import java.util.*
 import kotlin.collections.ArrayList
@@ -40,7 +43,7 @@ class CreateReservationActivity : Activity() {
         time_picker_from.setIs24HourView(true)
         time_picker_to.setIs24HourView(true)
 
-        val timeListener = TimePicker.OnTimeChangedListener(function = {_, _, _ -> reservationDataChanged()})
+        val timeListener = TimePicker.OnTimeChangedListener {_, _, _ -> reservationDataChanged()}
         time_picker_from.setOnTimeChangedListener(timeListener)
         time_picker_to.setOnTimeChangedListener(timeListener)
 
@@ -100,26 +103,29 @@ class CreateReservationActivity : Activity() {
 
         val requestBody = jsonReservation.toRequestBody(JSON)
         val request = Request.Builder().url(url).post(requestBody).build()
-/*
-        client.newCall(request).enqueue(object:Callback {
+
+        client.newCall(request).enqueue(object: Callback {
             override fun onFailure(call: Call, e: IOException) {
                 e.printStackTrace()
             }
 
             override fun onResponse(call: Call, response: Response) {
+                Log.i("TAG", response.toString())
                 if(!response.isSuccessful){
-
+                    runOnUiThread {
+                        Toast.makeText(baseContext, response.message, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         })
- */
+        setResult(RESULT_OK)
         finish()
     }
 
     private fun getTimeInSeconds(hour: Int, minute: Int): Long{
         val calendar = GregorianCalendar()
         calendar.set(Calendar.YEAR, selectedDate.year)
-        calendar.set(Calendar.MONTH, selectedDate.monthValue)
+        calendar.set(Calendar.MONTH, selectedDate.monthValue - 1)
         calendar.set(Calendar.DAY_OF_MONTH, selectedDate.dayOfMonth)
 
         calendar.set(Calendar.HOUR_OF_DAY, hour)
