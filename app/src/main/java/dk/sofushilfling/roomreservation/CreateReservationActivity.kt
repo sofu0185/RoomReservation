@@ -76,13 +76,14 @@ class CreateReservationActivity : Activity() {
     }
 
     private fun isPurposeValid(): Boolean{
-        val fromTime = time_picker_from.hour * 60 + time_picker_from.minute
-        val toTime = time_picker_to.hour * 60 + time_picker_to.minute
-        return  fromTime < toTime
+        return reservation_purpose.text.toString().trim().length >= 5
     }
 
     private fun isTimeValid(): Boolean{
-        return reservation_purpose.text.toString().trim().length >= 5
+        val fromTime = time_picker_from.hour * 60 + time_picker_from.minute
+        val toTime = time_picker_to.hour * 60 + time_picker_to.minute
+        return  fromTime < toTime
+
     }
 
     private fun postReservation(){
