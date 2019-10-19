@@ -66,8 +66,8 @@ public class Reservation implements Parcelable
     public String toString()
     {
         return "Purpose: " + purpose +
-                String.format(Locale.getDefault(), "\nFrom: %tT", new Date(getFromTime() * 1000)) +
-                String.format(Locale.getDefault(), "\nTo: %tT", new Date(getToTime() * 1000));
+                String.format(Locale.getDefault(), "\nFrom: %tR", new Date(getFromTime() * 1000)) +
+                String.format(Locale.getDefault(), "\nTo: %tR", new Date(getToTime() * 1000));
     }
 
     @Override
