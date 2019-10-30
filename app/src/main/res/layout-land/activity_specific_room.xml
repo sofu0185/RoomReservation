@@ -34,12 +34,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
                 -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recyclerViewReservations"
+            <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:scrollbars="vertical"
-                android:layout_marginVertical="8dp"/>
+                android:id="@+id/swipeContainer">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/recyclerViewReservations"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scrollbars="vertical"
+                    android:layout_marginVertical="8dp"/>
+            </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
         </LinearLayout>
 
     </LinearLayout>

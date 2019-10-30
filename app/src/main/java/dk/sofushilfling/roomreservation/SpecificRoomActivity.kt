@@ -16,6 +16,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 
@@ -70,6 +71,8 @@ class SpecificRoomActivity : Activity() {
         })
         itemTouchHelper.attachToRecyclerView(recyclerView)
 
+        swipeContainer.setOnRefreshListener { dateChanged() }
+
         if(FirebaseAuth.getInstance().currentUser == null){
             fab.hide()
         }
@@ -79,17 +82,19 @@ class SpecificRoomActivity : Activity() {
         }
 
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
-            selectedDate = LocalDate.of(year, month, dayOfMonth)
-            dateChanged(year, month, dayOfMonth)
+            selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
+            dateChanged()
         }
-        selectedDate = java.time.LocalDate.now()
-        dateChanged(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
+
+        selectedDate = LocalDate.now()
+        calendarView.minDate = calendarView.date
+        dateChanged()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if(requestCode == CREATE_NEW_RESERVATION){
-            dateChanged(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
+            dateChanged()
         }
     }
 
@@ -101,11 +106,12 @@ class SpecificRoomActivity : Activity() {
         startActivityForResult(intent, CREATE_NEW_RESERVATION)
     }
 
-    private fun dateChanged(year: Int, month: Int, dayOfMonth: Int){
+    private fun dateChanged(){
+        Log.d("TAG", selectedDate.toString())
         val cal = GregorianCalendar()
-        cal.set(Calendar.YEAR, year)
-        cal.set(Calendar.MONTH, month)
-        cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        cal.set(Calendar.YEAR, selectedDate.year)
+        cal.set(Calendar.MONTH, selectedDate.monthValue - 1)
+        cal.set(Calendar.DAY_OF_MONTH, selectedDate.dayOfMonth)
 
         cal.set(Calendar.MILLISECOND, 0)
         cal.set(Calendar.SECOND, 0)
@@ -155,6 +161,8 @@ class SpecificRoomActivity : Activity() {
                     reservations.sortBy { x -> x.fromTime }
 
                     runOnUiThread { reservationsAdapter.notifyDataSetChanged()}
+
+                    swipeContainer.isRefreshing = false
                 }
             }
         })

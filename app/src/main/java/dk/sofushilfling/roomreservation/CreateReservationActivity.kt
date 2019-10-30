@@ -33,7 +33,6 @@ class CreateReservationActivity : Activity() {
         setActionBar(toolbar_create_reservation as Toolbar)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-
         todaysReservations = intent.getParcelableArrayListExtra<Reservation>("reservations_today")
         selectedDate = intent.getSerializableExtra("selectedDate") as LocalDate
         roomId = intent.getIntExtra("roomId", -1)

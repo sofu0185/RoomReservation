@@ -27,11 +27,18 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
             -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewReservations"
+        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:scrollbars="vertical"/>
+            android:id="@+id/swipeContainer">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerViewReservations"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scrollbars="vertical"/>
+        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
     </LinearLayout>
 
 
