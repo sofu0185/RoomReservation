@@ -4,19 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
-import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.ShapeDrawable
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.*
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.Gson
 
@@ -73,21 +68,32 @@ class SpecificRoomActivity : Activity() {
 
         swipeContainer.setOnRefreshListener { dateChanged() }
 
-        if(FirebaseAuth.getInstance().currentUser == null){
+        fab.setOnClickListener { view ->  addNewReservation(view) }
+
+        if(FirebaseAuth.getInstance().currentUser == null)
             fab.hide()
-        }
-        else{
+        else
             fab.show()
-            fab.setOnClickListener { view ->  addNewReservation(view) }
-        }
 
         calendarView.setOnDateChangeListener { view, year, month, dayOfMonth ->
+            val selectedTime = getTimeSinceEpoch(year, month, dayOfMonth) + 10
+            val nowTime = Date().time
+            Log.d("TAG", "Now time: $nowTime; Selected time: $selectedTime")
+            if(nowTime > selectedTime || FirebaseAuth.getInstance().currentUser == null)
+                fab.hide()
+            else
+                fab.show()
+
             selectedDate = LocalDate.of(year, month + 1, dayOfMonth)
             dateChanged()
         }
 
+        val minDate = GregorianCalendar().apply {
+            time = Date()
+            add(Calendar.DAY_OF_YEAR, -1)
+        }
         selectedDate = LocalDate.now()
-        calendarView.minDate = calendarView.date
+        calendarView.minDate = minDate.timeInMillis
         dateChanged()
     }
 
@@ -99,28 +105,39 @@ class SpecificRoomActivity : Activity() {
     }
 
     private fun addNewReservation(view: View){
-        val intent = Intent(this, CreateReservationActivity::class.java)
-        intent.putParcelableArrayListExtra("reservations_today", reservations);
-        intent.putExtra("roomId", room.id)
-        intent.putExtra("selectedDate", selectedDate)
+        val intent = Intent(this, CreateReservationActivity::class.java).apply {
+            putParcelableArrayListExtra("reservations_today", reservations);
+            putExtra("roomId", room.id)
+            putExtra("selectedDate", selectedDate)
+        }
         startActivityForResult(intent, CREATE_NEW_RESERVATION)
+    }
+
+    private fun getTimeSinceEpoch(year: Int, month: Int, dayOfMonth: Int): Long {
+        return GregorianCalendar().apply {
+            timeInMillis = Date().time
+            set(Calendar.YEAR, year)
+            set(Calendar.MONTH, month)
+            set(Calendar.DAY_OF_MONTH, dayOfMonth)
+        }.timeInMillis
     }
 
     private fun dateChanged(){
         Log.d("TAG", selectedDate.toString())
-        val cal = GregorianCalendar()
-        cal.set(Calendar.YEAR, selectedDate.year)
-        cal.set(Calendar.MONTH, selectedDate.monthValue - 1)
-        cal.set(Calendar.DAY_OF_MONTH, selectedDate.dayOfMonth)
+        val cal = GregorianCalendar().apply {
+            set(Calendar.YEAR, selectedDate.year)
+            set(Calendar.MONTH, selectedDate.monthValue - 1)
+            set(Calendar.DAY_OF_MONTH, selectedDate.dayOfMonth)
 
-        cal.set(Calendar.MILLISECOND, 0)
-        cal.set(Calendar.SECOND, 0)
-        cal.set(Calendar.MINUTE, 0)
-        cal.set(Calendar.HOUR_OF_DAY, 0)
-        val fromTime = cal.time
+            set(Calendar.MILLISECOND, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.HOUR_OF_DAY, 0)
+        }
+        val fromTime = cal.timeInMillis
         cal.add(Calendar.DAY_OF_YEAR, 1)
-        val toTime = cal.time
-        getReservationsFromDate(room.id, fromTime.time / 1000, toTime.time / 1000)
+        val toTime = cal.timeInMillis
+        getReservationsFromDate(room.id, fromTime / 1000, toTime / 1000)
     }
 
     private fun deleteItem(position: Int) {
@@ -135,9 +152,7 @@ class SpecificRoomActivity : Activity() {
         client.newCall(request).enqueue(object:Callback {
             override fun onFailure(call: Call, e: IOException) { e.printStackTrace() }
 
-            override fun onResponse(call: Call, response: Response) {
-
-            }
+            override fun onResponse(call: Call, response: Response) {}
         })
     }
 
