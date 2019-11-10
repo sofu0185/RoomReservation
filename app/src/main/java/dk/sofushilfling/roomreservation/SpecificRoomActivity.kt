@@ -113,7 +113,6 @@ class SpecificRoomActivity : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         dateChanged()
-
     }
 
     private fun addNewReservation(view: View){

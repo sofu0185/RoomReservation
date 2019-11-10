@@ -91,7 +91,7 @@ class CreateReservationActivity : Activity() {
     }
 
     private fun isPurposeValid(): Boolean{
-        return reservation_purpose.text.toString().trim().length >= 5
+        return reservation_purpose.text.toString().trim().length >= 3
     }
 
     private fun isTimeValid(): Boolean{
@@ -127,15 +127,15 @@ class CreateReservationActivity : Activity() {
 
             override fun onResponse(call: Call, response: Response) {
                 Log.i("TAG", response.toString())
-                if(!response.isSuccessful){
-                    runOnUiThread {
+                runOnUiThread {
+                    if(!response.isSuccessful){
                         Toast.makeText(baseContext, response.message, Toast.LENGTH_SHORT).show()
                     }
+                    setResult(RESULT_OK)
+                    finish()
                 }
             }
         })
-        setResult(RESULT_OK)
-        finish()
     }
 
     private fun getTimeInSeconds(hour: Int, minute: Int): Long{
