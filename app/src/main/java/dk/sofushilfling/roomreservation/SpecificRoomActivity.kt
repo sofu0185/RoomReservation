@@ -30,6 +30,18 @@ class SpecificRoomActivity : Activity() {
     private lateinit var room: Room
     private lateinit var selectedDate: LocalDate
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putSerializable("selectedDate", selectedDate)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        selectedDate = savedInstanceState.getSerializable("selectedDate") as LocalDate
+        calendarView.date = getTimeSinceEpoch(selectedDate.year, selectedDate.monthValue - 1, selectedDate.dayOfMonth)
+        dateChanged()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_specific_room)
@@ -39,7 +51,7 @@ class SpecificRoomActivity : Activity() {
         title = room.name
 
         reservationsAdapter = ReservationAdapter(reservations)
-        val recyclerView = findViewById<RecyclerView>(R.id.recyclerViewReservations).apply {
+        val recyclerView = recyclerViewReservations.apply {
             setHasFixedSize(true)
             adapter = reservationsAdapter
         }
@@ -99,9 +111,9 @@ class SpecificRoomActivity : Activity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        if(requestCode == CREATE_NEW_RESERVATION){
-            dateChanged()
-        }
+
+        dateChanged()
+
     }
 
     private fun addNewReservation(view: View){

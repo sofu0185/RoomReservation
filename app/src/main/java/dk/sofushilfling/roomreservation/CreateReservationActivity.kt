@@ -27,6 +27,22 @@ class CreateReservationActivity : Activity() {
     private lateinit var selectedDate: LocalDate
     private var roomId: Int = 0;
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt("fromHour", time_picker_from.hour)
+        outState.putInt("fromMinute", time_picker_from.minute)
+        outState.putInt("toHour", time_picker_to.hour)
+        outState.putInt("toMinute", time_picker_to.minute)
+        super.onSaveInstanceState(outState)
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        time_picker_from.hour = savedInstanceState.getInt("fromHour")
+        time_picker_from.minute = savedInstanceState.getInt("fromMinute")
+        time_picker_to.hour = savedInstanceState.getInt("toHour")
+        time_picker_to.minute = savedInstanceState.getInt("toMinute")
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_create_reservation)
